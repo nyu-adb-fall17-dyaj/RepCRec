@@ -1,11 +1,23 @@
-
+from variable import Variable
+from dbsite import DBSite
 
 class DDBMS:
     def __init__(self,inputfile):
         self.inputf = open(inputfile)
-        self._run()
+        self.init_site()
+        self.querystate()
+        self.run()
 
-    def _run(self):
+    def init_site(self):
+        self.sites = {}
+        for i in range(1,11):
+            self.sites[i]=DBSite(i)
+
+    def querystate(self):
+        for s in self.sites:
+            print(self.sites[s])
+
+    def run(self):
         print('Start')
         for line in self.inputf:
             line = line.split(')')[0]
