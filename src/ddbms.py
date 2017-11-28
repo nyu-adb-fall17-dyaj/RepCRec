@@ -9,16 +9,20 @@ class DDBMS:
         self.sites = {}
         self.init_site()
         self.tm = TransactionManager(self.sites)
-        #self.querystate()
+        self.querystate()
         self.run()
+        self.querystate()
 
     def init_site(self):
         for i in range(1,11):
             self.sites[i]=DBSite(i)
 
     def querystate(self):
+        print('----------System State at Time {}'.format(Ticker.get_tick()))
         for s in self.sites:
-            print(self.sites[s])
+            self.sites[s].querystate()
+        print('~~~~~~~~~~Transactions~~~~~~~~~~')
+        self.tm.querystate()
 
     def run(self):
         print('Start')
@@ -91,4 +95,4 @@ class DDBMS:
         self.sites[int(site)].recover()
 
 if __name__ == '__main__':
-    ddbms = DDBMS('input1')
+    ddbms = DDBMS('input')

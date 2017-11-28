@@ -6,9 +6,35 @@ class DBSite:
         self.id=id
         self.vars={}
         self.init_vars()
+        self.locktable={}
+        self.init_locks()
         self.up=True
         self.up_since=0
     
+    def init_locks(self):
+        for v in self.vars:
+            self.locktable[v]=[set(),None]     #[Read Locks, Write Lock]
+
+    def acquire_read_lock(self,trx,var):
+        if self.locktable[var][1] and self.locktable[var][1] != trx:
+            return False
+        self.locktable[var][0].add(trx)
+        return True
+
+    def acquire_write_lock(self,trx,var):
+        readlocks,writelock = self.locktable[var]
+        if (not readlocks or (trx in readlocks and len(readlocks)==1)) and (not writelock or writelock == trx):
+            self.locktable[var][1]=trx
+            return True
+        return False
+
+    def release_locks(self,trx):
+        for k in self.locktable:
+            if trx in self.locktable[k][0]:
+                self.locktable[k][0].remove(trx)
+            if trx == self.locktable[k][1]:
+                self.locktable[k][1]=None
+
     def init_vars(self):
         for i in range(1,21):
             id = 'x'+str(i)
@@ -18,11 +44,11 @@ class DBSite:
             elif 1 + (i%10) == self.id:
                 self.vars[id]=Variable(id,val)
     
-    def __str__(self):
-        s='Site {}:\n'.format(self.id)
-        var_strs = [str(self.vars[v]) for v in self.vars]
-        var_str = "\n".join(var_strs)
-        return s+var_str+'\n'
+    def querystate(self):
+        print('**********Site {}:**********'.format(self.id))
+        for v in self.vars:
+            self.vars[v].querystate()
+            print('locks: {}'.format(self.locktable[v]))
 
     def dump(self):
         if self.up:

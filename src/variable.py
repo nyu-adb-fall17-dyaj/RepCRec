@@ -5,5 +5,5 @@ class Variable:
         self.uncommited_value=None
         self.available=True
 
-    def __str__(self):
-        return '{}: {} at time {}'.format(self.id,self.commited_value[-1][1],self.commited_value[-1][0])
+    def querystate(self):
+        print('{}: {} at time {}'.format(self.id,self.commited_value[-1][1],self.commited_value[-1][0]))
