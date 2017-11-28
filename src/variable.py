@@ -1,7 +1,9 @@
 class Variable:
     def __init__(self,id,val):
         self.id=id
-        self.value=val
+        self.commited_value=[(0,val)]
+        self.uncommited_value=None
+        self.available=True
 
     def __str__(self):
-        return '{}: {}'.format(self.id,self.value)
+        return '{}: {} at time {}'.format(self.id,self.commited_value[-1][1],self.commited_value[-1][0])
