@@ -27,3 +27,6 @@ class Variable:
                 
         #shouldn't reach here
         return False
+
+    def write(self,val):
+        self.uncommited_value=val

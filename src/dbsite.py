@@ -30,15 +30,26 @@ class DBSite:
             return (False,None)
         if self.locktable[var][1] and self.locktable[var][1] != trx:
             return (False,self.locktable[var][1])
-        self.locktable[var][0].add(trx)
+        #if trx hold write lock, don't need to acquire new read lock
+        if self.locktable[var][1] is None:
+            self.locktable[var][0].add(trx)
         return (True,None)
 
     def acquire_write_lock(self,trx,var):
         readlocks,writelock = self.locktable[var]
         if (not readlocks or (trx in readlocks and len(readlocks)==1)) and (not writelock or writelock == trx):
+            #if trx hold read lock, remove write lock, hold new write lock only
+            if trx in readlocks:
+                readlocks.remove(trx)
             self.locktable[var][1]=trx
-            return True
-        return False
+            return (True,[])
+        blocking_trx = []
+        if len(readlocks)>0:
+            blocking_trx.extend(list(readlocks))
+        if writelock is not None:
+            blocking_trx.append(writelock)
+        blocking_trx.remove(trx)
+        return (False,blocking_trx)
 
     def release_locks(self,trx):
         for k in self.locktable:
@@ -46,16 +57,33 @@ class DBSite:
                 self.locktable[k][0].remove(trx)
             if trx == self.locktable[k][1]:
                 self.locktable[k][1]=None
+    
+    def release_write_lock(self,trx,var):
+        if trx == self.locktable[var][1]:
+            self.locktable[var][1]=None
 
     def read(self,trx,is_read_only,timestamp,var):
         if not self.up:
             print('Site {} is down, try other sites'.format(self.id))
             return (False,None)
+        #if READ WRITE trx, try acquire read lock
         if not is_read_only:
             success,blocking_trx = self.acquire_read_lock(trx,var)
             if not success:
                 return (False,blocking_trx)
         return (self.vars[var].read(is_read_only,timestamp),None)
+
+    def write(self,trx,var,val):
+        if not self.up:
+            print('Site {} is down, try next site'.format(self.id))
+            return (False,[])
+        
+        success,blocking_trx = self.acquire_write_lock(trx,var)
+        if not success:
+            return (False,blocking_trx)
+        self.vars[var].write(val)
+        return (True,[])
+        
     
     def querystate(self):
         print('**********Site {}:**********'.format(self.id))
