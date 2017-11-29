@@ -8,12 +8,25 @@ class TransactionStatus(Enum):
     WAITING = 1
     ABORTED = 2
 
+class Operation:
+    '''
+        type = READ/WRITE
+        var = xi
+        val = value
+    '''
+    def __init__(self,o_type,var,val=None):
+        self.type=o_type
+        self.var=var
+        self.val=val
+
 class Transaction:
     def __init__(self,trx_id,timestamp,trx_type):
         self.id = trx_id
         self.timestamp = timestamp
         self.type = trx_type
         self.status = TransactionStatus.RUNNING
+        self.blocked_trx = []
+        self.operation = None
     
     def querystate(self):
         print('{}:'.format(self.id))
