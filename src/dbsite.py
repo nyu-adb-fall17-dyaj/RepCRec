@@ -48,14 +48,18 @@ class DBSite:
             blocking_trx.extend(list(readlocks))
         if writelock is not None:
             blocking_trx.append(writelock)
-        blocking_trx.remove(trx)
+        if trx in blocking_trx:
+            blocking_trx.remove(trx)
         return (False,blocking_trx)
 
-    def release_locks(self,trx):
+    def abort(self,trx):
+        #release locks
+        #clear uncommited value of vars writen by trx
         for k in self.locktable:
             if trx in self.locktable[k][0]:
                 self.locktable[k][0].remove(trx)
             if trx == self.locktable[k][1]:
+                self.vars[k].uncommited_value = None
                 self.locktable[k][1]=None
     
     def release_write_lock(self,trx,var):
@@ -84,25 +88,33 @@ class DBSite:
         self.vars[var].write(val)
         return (True,[])
         
+    def commit(self,trx):
+        for var in self.locktable:
+            if self.locktable[var][1]==trx:
+                print('{} in site {}'.format(var,self.id))
+                self.vars[var].commit(Ticker.get_tick())
+                self.locktable[var][1]=None
+            if trx in self.locktable[var][0]:
+                self.locktable[var][0].remove(trx)
     
     def querystate(self):
         print('**********Site {}:**********'.format(self.id))
         for v in self.vars:
             self.vars[v].querystate()
-            print('locks: {}'.format(self.locktable[v]))
+            #print('locks: {}'.format(self.locktable[v]))
 
     def dump(self):
         if self.up:
             print('Site {}:'.format(self.id))
             for v in sorted(self.vars,key= lambda k:int(k[1:])):
-                print(self.vars[v])
+                self.vars[v].dump()
         else:
             print('Site {} is down'.format(self.id))
 
     def dump_var(self,var):
         if self.up and self.vars[var].available_for_read:
             print('Site {}:'.format(self.id))
-            print(self.vars[var])
+            self.vars[var].dump()
         elif self.up:
             print('{} not available yet'.format(var))
         else:
@@ -113,6 +125,7 @@ class DBSite:
         self.up=False
     
     def recover(self):
+        self.init_locks()
         for v in self.vars:
             v_id = int(v[1:])
             

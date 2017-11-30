@@ -7,6 +7,7 @@ class TransactionStatus(Enum):
     RUNNING = 0
     WAITING = 1
     ABORTED = 2
+    COMMITED = 3
 
 class Operation:
     '''
@@ -27,6 +28,7 @@ class Transaction:
         self.status = TransactionStatus.RUNNING
         self.blocked_trx = []
         self.operation = None
+        self.site_access_time = {}  #site id: first success access tick
     
     def querystate(self):
         print('{}:'.format(self.id))

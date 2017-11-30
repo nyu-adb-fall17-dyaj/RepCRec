@@ -9,7 +9,6 @@ class DDBMS:
         self.sites = {}
         self.init_site()
         self.tm = TransactionManager(self.sites)
-        self.querystate()
         self.run()
         self.querystate()
 
@@ -30,7 +29,8 @@ class DDBMS:
             line = line.split(')')[0]
             line = line.split('(')
             method = line[0]
-            args = line[1].split(',')
+            args = [x.strip() for x in line[1].split(',')]
+            
             print('----------Tick {}----------'.format(Ticker.get_tick()))
             getattr(self,method)(*args)
             Ticker.next_tick()
@@ -45,11 +45,9 @@ class DDBMS:
         self.tm.beginRO(trx)
 
     def R(self,trx,var):
-        print('Read {} for {}'.format(var,trx))
         self.tm.read(trx,var)
 
     def W(self,trx,var,val):
-        print('Write {} to {} for {}'.format(var,val,trx))
         self.tm.write(trx,var,val)
 
     def dump(self,arg):
@@ -70,7 +68,7 @@ class DDBMS:
     def _dump_var(self,var):
         sites = self._locate_var(var)
         for s in sites:
-            s.dump_var(var)
+            self.sites[s].dump_var(var)
 
     def _dump_site(self,site):
         self.sites[int(site)].dump()
@@ -78,9 +76,9 @@ class DDBMS:
     def _locate_var(self,var):
         var_id = int(var[1:])
         if var_id%2==0:
-            return self.sites.values()
+            return self.sites.keys()
         else:
-            return [self.sites[1+(var_id%10)]]
+            return [1+(var_id%10)]
 
     def end(self,trx):
         print('{} ends'.format(trx))
@@ -93,6 +91,7 @@ class DDBMS:
     def recover(self,site):
         print('Recover site {}'.format(site))
         self.sites[int(site)].recover()
+        self.tm.retry_transaction()
 
 if __name__ == '__main__':
     ddbms = DDBMS('input')

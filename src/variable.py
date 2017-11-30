@@ -7,7 +7,10 @@ class Variable:
         self.available_for_read=True
 
     def querystate(self):
-        print('{}: {} at time {}'.format(self.id,self.commited_value[-1][1],self.commited_value[-1][0]))
+        print('{}: {} at time {}'.format(self.id,self.commited_value[0][1],self.commited_value[0][0]))
+
+    def dump(self):
+        print('{}: {} at time {}'.format(self.id,self.commited_value[0][1],self.commited_value[0][0]))
 
     def read(self,is_read_only,timestamp):
         if not self.available_for_read:
@@ -30,3 +33,9 @@ class Variable:
 
     def write(self,val):
         self.uncommited_value=val
+    
+    def commit(self,time):
+        print('commit value {} at time {}'.format(self.uncommited_value,time))
+        self.commited_value.insert(0,(time,self.uncommited_value))
+        self.uncommited_value=None
+        self.available_for_read=True
