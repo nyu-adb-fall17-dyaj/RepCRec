@@ -61,7 +61,7 @@ class TransactionManager:
         
         if blocking_trx is not None:
             print('Blocked by {}'.format(blocking_trx))
-            self.trxs[blocking_trx].blocked_trx.append(trx)
+            t.wait_for.add(blocking_trx)
     
 
     
@@ -111,8 +111,7 @@ class TransactionManager:
             print('Write fail')
             if blocking_trx:
                 print('Blocked by {}'.format(blocking_trx))
-                for bt in blocking_trx:
-                    self.trxs[bt].blocked_trx.append(trx)
+                t.wait_for.update(blocking_trx)
                 for s in potential_sites:
                     self.sites[s].release_write_lock(trx,var)
             else:

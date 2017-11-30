@@ -26,7 +26,7 @@ class Transaction:
         self.timestamp = timestamp
         self.type = trx_type
         self.status = TransactionStatus.RUNNING
-        self.blocked_trx = []
+        self.wait_for = set()
         self.operation = None
         self.site_access_time = {}  #site id: first success access tick
     
