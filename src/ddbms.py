@@ -105,6 +105,11 @@ class DDBMS:
             self.tm.abort(youngest_transaction)
 
     def end(self, trx):
+        # Check if there is any deadlock to be resolved before committing.
+        # However, only check if there was no prior deadlock checking
+        # at the beginning of this tick:
+        if(not Ticker.get_tick() % 5 == 0):
+            self.detect_and_resolve_cycles()
         print('{} ends'.format(trx))
         self.tm.end(trx)
 
