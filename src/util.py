@@ -48,6 +48,7 @@ class DetectCycles():
                 break
         return final_chain
 
-class Util():
-    def get_cycles(self, graph):
+class Util:
+    @staticmethod
+    def get_cycles(graph):
         return DetectCycles().get_cycles(graph)

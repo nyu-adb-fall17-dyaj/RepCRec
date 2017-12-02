@@ -2,9 +2,11 @@ from ticker import Ticker
 from variable import Variable
 from dbsite import DBSite
 from transaction_manager import TransactionManager
+from util import Util
+
 
 class DDBMS:
-    def __init__(self,inputfile):
+    def __init__(self, inputfile):
         self.inputf = open(inputfile)
         self.sites = {}
         self.init_site()
@@ -13,8 +15,8 @@ class DDBMS:
         self.querystate()
 
     def init_site(self):
-        for i in range(1,11):
-            self.sites[i]=DBSite(i)
+        for i in range(1, 11):
+            self.sites[i] = DBSite(i)
 
     def querystate(self):
         print('----------System State at Time {}'.format(Ticker.get_tick()))
@@ -26,31 +28,34 @@ class DDBMS:
     def run(self):
         print('Start')
         for line in self.inputf:
+            tick = Ticker.get_tick()
+            if (tick % 5 == 0):
+                print(self.detect_cycles())
             line = line.split(')')[0]
             line = line.split('(')
             method = line[0]
             args = [x.strip() for x in line[1].split(',')]
-            
-            print('----------Tick {}----------'.format(Ticker.get_tick()))
-            getattr(self,method)(*args)
+
+            print('----------Tick {}----------'.format(tick))
+            getattr(self, method)(*args)
             Ticker.next_tick()
         print('Done')
 
-    def begin(self,trx):
+    def begin(self, trx):
         print('{} begins'.format(trx))
-        self.tm.begin(trx)    
+        self.tm.begin(trx)
 
-    def beginRO(self,trx):
+    def beginRO(self, trx):
         print('RO {} begins'.format(trx))
         self.tm.beginRO(trx)
 
-    def R(self,trx,var):
-        self.tm.read(trx,var)
+    def R(self, trx, var):
+        self.tm.read(trx, var)
 
-    def W(self,trx,var,val):
-        self.tm.write(trx,var,val)
+    def W(self, trx, var, val):
+        self.tm.write(trx, var, val)
 
-    def dump(self,arg):
+    def dump(self, arg):
         if not arg:
             print('Dump all')
             self._dump_all()
@@ -64,34 +69,40 @@ class DDBMS:
     def _dump_all(self):
         for s in self.sites:
             self.sites[s].dump()
-    
-    def _dump_var(self,var):
+
+    def _dump_var(self, var):
         sites = self._locate_var(var)
         for s in sites:
             self.sites[s].dump_var(var)
 
-    def _dump_site(self,site):
+    def _dump_site(self, site):
         self.sites[int(site)].dump()
 
-    def _locate_var(self,var):
+    def _locate_var(self, var):
         var_id = int(var[1:])
-        if var_id%2==0:
+        if var_id % 2 == 0:
             return self.sites.keys()
         else:
-            return [1+(var_id%10)]
+            return [1 + (var_id % 10)]
 
-    def end(self,trx):
+    def detect_cycles(self):
+        waits_for_graph = self.tm._generate_waits_for_graph()
+        cycles = Util.get_cycles(waits_for_graph)
+        return cycles
+
+    def end(self, trx):
         print('{} ends'.format(trx))
         self.tm.end(trx)
 
-    def fail(self,site):
+    def fail(self, site):
         print('Site {} fails'.format(site))
         self.sites[int(site)].fail()
 
-    def recover(self,site):
+    def recover(self, site):
         print('Recover site {}'.format(site))
         self.sites[int(site)].recover()
         self.tm.retry_transaction()
+
 
 if __name__ == '__main__':
     ddbms = DDBMS('input')
