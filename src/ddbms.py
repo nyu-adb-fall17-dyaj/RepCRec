@@ -29,14 +29,15 @@ class DDBMS:
         print('Start')
         for line in self.inputf:
             tick = Ticker.get_tick()
-            if (tick % 5 == 0):
-                print(self.detect_cycles())
             line = line.split(')')[0]
             line = line.split('(')
             method = line[0]
             args = [x.strip() for x in line[1].split(',')]
 
             print('----------Tick {}----------'.format(tick))
+            # Detect cycles every five ticks:
+            if (tick % 5 == 0):
+                self.detect_and_resolve_cycles()
             getattr(self, method)(*args)
             Ticker.next_tick()
         print('Done')
@@ -85,10 +86,23 @@ class DDBMS:
         else:
             return [1 + (var_id % 10)]
 
-    def detect_cycles(self):
+    def detect_and_resolve_cycles(self):
         waits_for_graph = self.tm._generate_waits_for_graph()
         cycles = Util.get_cycles(waits_for_graph)
-        return cycles
+        if(len(cycles) > 0):
+            # Randomly select the first cycle to resolve:
+            cycle = cycles[0]
+            print("Detected cycle: ", cycle)
+
+            # Find youngest transaction in cycle:
+            latest_timestamp = 0
+            youngest_transaction = None
+            for trx in cycle:
+                t = self.tm.trxs[trx]
+                if(t.timestamp > latest_timestamp):
+                    latest_timestamp = t.timestamp
+                    youngest_transaction = trx
+            self.tm.abort(youngest_transaction)
 
     def end(self, trx):
         print('{} ends'.format(trx))
