@@ -130,9 +130,9 @@ class DBSite:
             v_id = int(v[1:])
             
             if v_id%2==0:
-                self.vars[v].available=False
+                self.vars[v].available_for_read=False
             #unreplicated variable available immediately
             else:
-                self.vars[v].available=True
+                self.vars[v].available_for_read=True
         self.up=True
         self.up_since=Ticker.get_tick()
