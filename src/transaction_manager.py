@@ -30,29 +30,46 @@ class TransactionManager:
             else:
                 self.write(trx, o.var, o.val)
 
+    def _wait_for_write(self,trx,var):
+        current_waitlist = self.waitlist
+        if trx in current_waitlist:
+            index = current_waitlist.index(trx)
+            current_waitlist = current_waitlist[:index]
+        for t in current_waitlist:
+            op = self.trxs[t].operation
+            if op.type == 'w' and op.var == var:
+                return t
+        return None
+
+
     def read(self, trx, var):
         print('Read {} for {}'.format(var, trx))
         t = self.trxs[trx]
         if t.status == TransactionStatus.ABORTED or t.status == TransactionStatus.COMMITED:
             print('{} is already aborted or commited'.format(trx))
             return
-        potential_sites = self._locate_var(var)
-        # list of trx block the read
-        blocking_trx = None
-        for s in potential_sites:
-            # read success
-            site = self.sites[s]
-            success, blocking_trx = site.read(t.id, t.type == TransactionType.READ_ONLY, t.timestamp, var)
-            if success:
-                print('Read success')
-                if trx in self.waitlist:
-                    self.waitlist.remove(trx)
-                t.status = TransactionStatus.RUNNING
-                if t.type == TransactionType.READ_WRITE:
-                    t.site_access_time[s] = Ticker.get_tick()
-                return
-            elif blocking_trx is not None:
-                break
+        
+        # check if there write operation for same variable already waiting in front of this trx
+        blocking_trx = self._wait_for_write(trx,var)
+
+        # not write op for var before trx
+        if blocking_trx is None:
+            potential_sites = self._locate_var(var)
+            for s in potential_sites:
+                # read success
+                site = self.sites[s]
+                success, blocking_trx = site.read(t.id, t.type == TransactionType.READ_ONLY, t.timestamp, var)
+                if success:
+                    print('Read success')
+                    if trx in self.waitlist:
+                        self.waitlist.remove(trx)
+                    t.status = TransactionStatus.RUNNING
+                    if t.type == TransactionType.READ_WRITE:
+                        t.site_access_time[s] = Ticker.get_tick()
+                    return
+                elif blocking_trx is not None:
+                    break
+
         # read fail
         print('Read fail')
         t.status = TransactionStatus.WAITING
@@ -140,15 +157,18 @@ class TransactionManager:
         if trx in self.waitlist:
             self.waitlist.remove(trx)
         print('{} aborted'.format(trx))
-        for s in self.sites:
-            self.sites[s].abort(trx)
-        self._remove_wait_for_edge(trx)
         self.trxs[trx].status = TransactionStatus.ABORTED
-        self.retry_transaction()
+
+        if self.trxs[trx].type == TransactionType.READ_WRITE:
+            for s in self.sites:
+                self.sites[s].abort(trx)
+            self._remove_wait_for_edge(trx)
+            self.retry_transaction()
 
     def end(self, trx):
         if trx in self.waitlist:
-            self.waitlist.remove(trx)
+            self.abort(trx)
+            return
         t = self.trxs[trx]
         if t.type == TransactionType.READ_ONLY:
             print('READ ONLY {} commited'.format(trx))
