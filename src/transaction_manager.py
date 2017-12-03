@@ -123,12 +123,26 @@ class TransactionManager:
                 self.waitlist.append(trx)
         print('Wait-for list: ', t.wait_for)
 
+    def _remove_wait_for_edge(self, trx):
+        '''
+        Removes all waits-for edges leading to trx.
+        I.e. if any transaction was waiting for trx to be done,
+        at the end of this procedure it won't wait anymore.
+        :param trx: Transaction that is being aborted/ended
+        :return:
+        '''
+        for transaction, t in self.trxs.items():
+            if(trx in t.wait_for):
+                t.wait_for.remove(trx)
+
+
     def abort(self, trx):
         if trx in self.waitlist:
             self.waitlist.remove(trx)
         print('{} aborted'.format(trx))
         for s in self.sites:
             self.sites[s].abort(trx)
+        self._remove_wait_for_edge(trx)
         self.trxs[trx].status = TransactionStatus.ABORTED
         self.retry_transaction()
 
@@ -153,6 +167,7 @@ class TransactionManager:
         # pass validation
         for s in t_site_access_time:
             self.sites[s].commit(trx)
+        self._remove_wait_for_edge(trx)
         t.status = TransactionStatus.COMMITED
         print('READ WRITE {} commited'.format(trx))
         self.retry_transaction()
