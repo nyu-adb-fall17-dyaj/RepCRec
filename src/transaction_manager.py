@@ -81,7 +81,8 @@ class TransactionManager:
         if blocking_trx is not None:
             print('Blocked by {}'.format(blocking_trx))
             t.wait_for.add(blocking_trx)
-        print('Wait-for list: ', t.wait_for)
+        if(t.wait_for):
+            print('Wait-for list: ', t.wait_for)
 
     def _locate_var(self, var):
         var_id = int(var[1:])
@@ -91,7 +92,7 @@ class TransactionManager:
             return [1 + (var_id % 10)]
 
     def write(self, trx, var, val):
-        print('Write {} to {} for {}'.format(var, val, trx))
+        print('Write {} = {} for {}'.format(var, val, trx))
         t = self.trxs[trx]
         if t.status == TransactionStatus.ABORTED or t.status == TransactionStatus.COMMITED:
             print('{} is already aborted or commited'.format(trx))
@@ -138,7 +139,8 @@ class TransactionManager:
             t.operation = Operation('w', var, val)
             if trx not in self.waitlist:
                 self.waitlist.append(trx)
-        print('Wait-for list: ', t.wait_for)
+        if(t.wait_for):
+            print('Wait-for list: ', t.wait_for)
 
     def _remove_wait_for_edge(self, trx):
         '''

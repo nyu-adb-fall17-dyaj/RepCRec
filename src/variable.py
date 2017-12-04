@@ -18,14 +18,14 @@ class Variable:
             return False
         if not is_read_only:
             if self.uncommited_value is not None:
-                print('{} has unconmmited value {}'.format(self.id,self.uncommited_value))
+                print('{} has uncommitted value {}'.format(self.id,self.uncommited_value))
             else:
-                print('{} has conmmited value {} modified at time {}'.format(self.id,self.commited_value[0][1],self.commited_value[0][0]))
+                print('{} has committed value {} modified at time {}'.format(self.id,self.commited_value[0][1],self.commited_value[0][0]))
             return True
         else:
             for v in self.commited_value:
                 if v[0]<timestamp:
-                    print('{} has conmmited value {} modified at time {}'.format(self.id,v[1],v[0]))
+                    print('{} has committed value {} modified at time {}'.format(self.id,v[1],v[0]))
                     return True
                 
         #shouldn't reach here

@@ -4,15 +4,31 @@ from dbsite import DBSite
 from transaction_manager import TransactionManager
 from util import Util
 
+import argparse
 
 class DDBMS:
-    def __init__(self, inputfile):
-        self.inputf = open(inputfile)
+    def __init__(self):
+        self.inputf = None
+        self.cmd = False
+        self.parser = argparse.ArgumentParser(description="Run Replicated Concurrency Control and Recovery database.")
+        self.init_arguments()
         self.sites = {}
         self.init_site()
         self.tm = TransactionManager(self.sites)
         self.run()
         self.querystate()
+
+    def init_arguments(self):
+        self.parser.add_argument('--cmd', action='store_true', help="Specify flag if you wish to enter input via command line.")
+        self.parser.add_argument('-file', help="Filepath to input file.")
+
+        args = self.parser.parse_args()
+        self.cmd = args.cmd
+        if(self.cmd == False):
+            inputfile = 'input'  # default input file if filepath not specified
+            if(args.file is not None):
+                inputfile = args.file
+            self.inputf = open(inputfile)
 
     def init_site(self):
         for i in range(1, 11):
@@ -27,20 +43,31 @@ class DDBMS:
 
     def run(self):
         print('Start')
-        for line in self.inputf:
-            tick = Ticker.get_tick()
-            line = line.split(')')[0]
-            line = line.split('(')
-            method = line[0]
-            args = [x.strip() for x in line[1].split(',')]
-
-            print('----------Tick {}----------'.format(tick))
-            # Detect cycles every five ticks:
-            if (tick % 5 == 0):
-                self.detect_and_resolve_cycles()
-            getattr(self, method)(*args)
-            Ticker.next_tick()
+        if(self.cmd == True): # run interactively via command line
+            line = None
+            while line != '':
+                line = input()
+                self._parse_line(line)
+        else: # parse input file
+            for line in self.inputf:
+                self._parse_line(line)
         print('Done')
+
+    def _parse_line(self, line):
+        if not line:
+            return
+        tick = Ticker.get_tick()
+        line = line.split(')')[0]
+        line = line.split('(')
+        method = line[0]
+        args = [x.strip() for x in line[1].split(',')]
+
+        print('----------Tick {}----------'.format(tick))
+        # Detect cycles every five ticks:
+        if (tick % 5 == 0):
+            self.detect_and_resolve_cycles()
+        getattr(self, method)(*args)
+        Ticker.next_tick()
 
     def begin(self, trx):
         print('{} begins'.format(trx))
@@ -54,7 +81,7 @@ class DDBMS:
         self.tm.read(trx, var)
 
     def W(self, trx, var, val):
-        self.tm.write(trx, var, val)
+        self.tm.write(trx, var, int(val))
 
     def dump(self, arg):
         if not arg:
@@ -103,6 +130,7 @@ class DDBMS:
                     latest_timestamp = t.timestamp
                     youngest_transaction = trx
             self.tm.abort(youngest_transaction)
+            self.detect_and_resolve_cycles()
 
     def end(self, trx):
         # Check if there is any deadlock to be resolved before committing.
@@ -124,4 +152,4 @@ class DDBMS:
 
 
 if __name__ == '__main__':
-    ddbms = DDBMS('input')
+    ddbms = DDBMS()
