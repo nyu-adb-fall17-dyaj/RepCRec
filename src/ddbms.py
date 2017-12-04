@@ -103,6 +103,7 @@ class DDBMS:
                     latest_timestamp = t.timestamp
                     youngest_transaction = trx
             self.tm.abort(youngest_transaction)
+            self.detect_and_resolve_cycles()
 
     def end(self, trx):
         # Check if there is any deadlock to be resolved before committing.
