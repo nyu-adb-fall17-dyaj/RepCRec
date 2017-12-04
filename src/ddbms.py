@@ -81,7 +81,7 @@ class DDBMS:
         self.tm.read(trx, var)
 
     def W(self, trx, var, val):
-        self.tm.write(trx, var, val)
+        self.tm.write(trx, var, int(val))
 
     def dump(self, arg):
         if not arg:
