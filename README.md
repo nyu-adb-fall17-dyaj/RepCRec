@@ -62,4 +62,4 @@ $ nosetests
 ## Authors
 
 * **Da Ying** - dy877@nyu.edu
-* **Ardi Jusufi** - aj2223877@nyu.edu
+* **Ardi Jusufi** - aj2223@nyu.edu
