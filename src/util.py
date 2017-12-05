@@ -5,13 +5,21 @@ class NodeColor(Enum):
     BLACK = 2 # Finished visiting
 
 class DetectCycles():
+    """
+    Performs depth-first search to find all cycles on a directed graph and returns a list of cycles found.
+    """
     def __init__(self):
         self.node_colors = {}
         self.node_parents = {}
         self.chain_of_nodes = [] # list of visited transactions under consideration for cycles
-        self.cycles = []
+        self.cycles = [] # list of cycles found in graph
 
     def get_cycles(self, graph):
+        """
+        Prints all cycles found on graph.
+        :param graph: graph to be inspected for cycles
+        :return: list of cycles found in graph (in no particular order), if any
+        """
         # Initialize all nodes as unvisited:
         for k, v in graph.items():
             self.node_colors[k] = NodeColor.WHITE
@@ -26,6 +34,11 @@ class DetectCycles():
         return cycles
 
     def dfs_visit(self, graph, node):
+        """
+        Performs DFS on graph starting on node. Stores cycles as they are encountered.
+        :param graph: graph complete with directed edges where the DFS is performed
+        :param node: start node for the DFS
+        """
         self.node_colors[node] = NodeColor.GRAY
         self.chain_of_nodes.append(node)
         for neighbor in graph[node]:
@@ -39,6 +52,11 @@ class DetectCycles():
         self.chain_of_nodes = self.chain_of_nodes[:-1]
 
     def dfs_get_cycle(self, node):
+        """
+        Extracts and returns the cycle from the visited nodes.
+        :param node: node where the cycle starts being inspected
+        :return: list of nodes in cycle
+        """
         final_chain = [node]
         for n in reversed(self.chain_of_nodes):
             if(n != node):
@@ -51,4 +69,9 @@ class DetectCycles():
 class Util:
     @staticmethod
     def get_cycles(graph):
+        """
+        Returns list of cycles in graph.
+        :param graph: graph to be inspected for cycles
+        :return: list of cycles in graph, if any
+        """
         return DetectCycles().get_cycles(graph)
