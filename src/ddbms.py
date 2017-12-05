@@ -7,11 +7,14 @@ from util import Util
 import argparse
 
 class DDBMS:
-    def __init__(self):
+    def __init__(self,inputfile=None):
         self.inputf = None
         self.cmd = False
-        self.parser = argparse.ArgumentParser(description="Run Replicated Concurrency Control and Recovery database.")
-        self.init_arguments()
+        if inputfile is None:        
+            self.parser = argparse.ArgumentParser(description="Run Replicated Concurrency Control and Recovery database.")
+            self.init_arguments()
+        else:
+            self.inputf = open(inputfile)
         self.sites = {}
         self.init_site()
         self.tm = TransactionManager(self.sites)

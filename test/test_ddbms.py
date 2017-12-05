@@ -12,8 +12,8 @@ class TestDDBMS(unittest.TestCase):
         '''READ ONLY trx reads the latest commited value of variable before the time the trx starts'''
         db = DDBMS('test/test_RO_1')
         output = self.result.getvalue()
-        self.assertIn('x2 has conmmited value 20',output)
-        self.assertIn('x1 has conmmited value 10',output)
+        self.assertIn('x2 has committed value 20',output)
+        self.assertIn('x1 has committed value 10',output)
         self.assertEqual(db.tm.trxs['T1'].status.name,'COMMITED')
         self.assertEqual(db.tm.trxs['T2'].status.name,'COMMITED')
         self.assertEqual(db.sites[2].vars['x1'].commited_value[0][1],101)
@@ -24,8 +24,8 @@ class TestDDBMS(unittest.TestCase):
         '''Lock acquisition is first come first serve'''
         db = DDBMS('test/test_FIFO_lock_acquisition')
         output = self.result.getvalue()
-        self.assertIn('x1 has conmmited value 10 modified at time 0',output)
-        self.assertIn('x1 has conmmited value 5 modified at time 7',output)
+        self.assertIn('x1 has committed value 10 modified at time 0',output)
+        self.assertIn('x1 has committed value 5 modified at time 7',output)
         self.assertEqual(db.tm.trxs['T1'].status.name,'COMMITED')
         self.assertEqual(db.tm.trxs['T2'].status.name,'COMMITED')
         self.assertEqual(db.tm.trxs['T3'].status.name,'COMMITED')
@@ -65,7 +65,7 @@ class TestDDBMS(unittest.TestCase):
         '''Non Replicated variable available to read immediately'''
         db = DDBMS('test/test_site_fail_recover_1')
         output = self.result.getvalue()
-        self.assertIn('x1 has conmmited value 10 modified at time 0',output)
+        self.assertIn('x1 has committed value 10 modified at time 0',output)
         self.assertEqual(db.tm.trxs['T1'].status.name,'COMMITED')
 
     def test_site_fail_recover_2(self):
