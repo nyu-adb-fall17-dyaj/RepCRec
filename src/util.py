@@ -1,22 +1,29 @@
+'''Graph cycle detection
+
+Performs depth-first search to find all cycles on a directed graph and returns a list of cycles found.
+
+Authors:
+    Da Ying (dy877@nyu.edu)
+    Ardi Jusufi (aj2223@nyu.edu)
+'''
+
 from enum import Enum
+
+
 class NodeColor(Enum):
-    WHITE = 0 # Not visited yet
+    WHITE = 0  # Not visited yet
     GRAY = 1  # Visiting
-    BLACK = 2 # Finished visiting
+    BLACK = 2  # Finished visiting
+
 
 class DetectCycles():
-    """
-    Performs depth-first search to find all cycles on a directed graph and returns a list of cycles found.
+    '''Performs depth-first search to find all cycles on a directed graph and returns a list of cycles found.'''
 
-    Authors:
-        Da Ying (dy877@nyu.edu)
-        Ardi Jusufi (aj2223@nyu.edu)
-    """
     def __init__(self):
         self.node_colors = {}
         self.node_parents = {}
-        self.chain_of_nodes = [] # list of visited transactions under consideration for cycles
-        self.cycles = [] # list of cycles found in graph
+        self.chain_of_nodes = []  # list of visited transactions under consideration for cycles
+        self.cycles = []  # list of cycles found in graph
 
     def get_cycles(self, graph):
         """
@@ -70,7 +77,9 @@ class DetectCycles():
                 break
         return final_chain
 
+
 class Util:
+
     @staticmethod
     def get_cycles(graph):
         """

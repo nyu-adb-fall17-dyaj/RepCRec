@@ -1,3 +1,12 @@
+'''Distributed database management system
+
+A simulator of distributed database management system
+
+Authors:
+    Da Ying (dy877@nyu.edu)
+    Ardi Jusufi (aj2223@nyu.edu)
+'''
+
 from .ticker import Ticker
 from .variable import Variable
 from .dbsite import DBSite
@@ -6,15 +15,11 @@ from .util import Util
 
 import argparse
 
-class DDBMS:
-    """
-    Parses input transactions and dispatches them according to the operation.
 
-    Authors:
-        Da Ying (dy877@nyu.edu)
-        Ardi Jusufi (aj2223@nyu.edu)
-    """
-    def __init__(self,inputfile=None):
+class DDBMS:
+    """Parses input transactions and dispatches them according to the operation."""
+
+    def __init__(self, inputfile=None):
         """
         Initializes the input (command-line or from a file), all sites and the transaction manager.
         :param inputfile: filepath to input file, if any
@@ -22,7 +27,8 @@ class DDBMS:
         self.inputf = None
         self.cmd = False
         if inputfile is None:
-            self.parser = argparse.ArgumentParser(description="Run Replicated Concurrency Control and Recovery database.")
+            self.parser = argparse.ArgumentParser(
+                description="Run Replicated Concurrency Control and Recovery database.")
             self.init_arguments()
         else:
             self.inputf = open(inputfile)
@@ -36,7 +42,8 @@ class DDBMS:
         """
         Parses runtime arguments for reading command-line input or from a filepath.
         """
-        self.parser.add_argument('--cmd', action='store_true', help="Specify flag if you wish to enter input via command line.")
+        self.parser.add_argument('--cmd', action='store_true',
+                                 help="Specify flag if you wish to enter input via command line.")
         self.parser.add_argument('-file', help="Filepath to input file.")
 
         args = self.parser.parse_args()
@@ -69,12 +76,12 @@ class DDBMS:
         Reads the input line by line and calls the respective operation.
         """
         print('Start')
-        if(self.cmd == True): # run interactively via command line
+        if(self.cmd == True):  # run interactively via command line
             line = None
             while line != '':
                 line = input()
                 self._parse_line(line)
-        else: # parse input file
+        else:  # parse input file
             for line in self.inputf:
                 self._parse_line(line)
         print('Done')
@@ -96,7 +103,7 @@ class DDBMS:
         # Detect cycles every five ticks:
         if (tick % 5 == 0):
             self.detect_and_resolve_cycles()
-        getattr(self, method)(*args) # call respective method
+        getattr(self, method)(*args)  # call respective method
         Ticker.next_tick()
 
     def begin(self, trx):

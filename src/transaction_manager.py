@@ -1,15 +1,21 @@
+'''Transaction Manager
+
+Manages the transactions read from input, and dispatches them to respective classes for further handling.
+
+Authors:
+    Da Ying (dy877@nyu.edu)
+    Ardi Jusufi (aj2223@nyu.edu)
+'''
+
 from .ticker import Ticker
 from .transaction import TransactionType, Transaction, TransactionStatus, Operation
 
 from collections import defaultdict
 
+
 class TransactionManager:
-    """
-    Manages the transactions read from input, and dispatches them to respective classes for further handling.
-    Authors:
-        Da Ying (dy877@nyu.edu)
-        Ardi Jusufi (aj2223@nyu.edu)
-    """
+    """Manages the transactions read from input, and dispatches them to respective classes for further handling."""
+
     def __init__(self, sites=None):
         """
         Maintains a list of sites and transactions used in the database, as well as a waitlist of all transactions
@@ -18,21 +24,23 @@ class TransactionManager:
         """
         self.sites = sites
         self.trxs = {}
-        self.waitlist = [] # transactions waiting to execute ordered by time.
+        self.waitlist = []  # transactions waiting to execute ordered by time.
 
     def begin(self, trx):
         """
         Initializes a read/write transaction.
         :param trx: Transaction id being started, e.g. 'T1'
         """
-        self.trxs[trx] = Transaction(trx, Ticker.get_tick(), TransactionType.READ_WRITE)
+        self.trxs[trx] = Transaction(
+            trx, Ticker.get_tick(), TransactionType.READ_WRITE)
 
     def beginRO(self, trx):
         """
         Initializes a read-only transaction.
         :param trx: Transaction id being started, e.g. 'T1'
         """
-        self.trxs[trx] = Transaction(trx, Ticker.get_tick(), TransactionType.READ_ONLY)
+        self.trxs[trx] = Transaction(
+            trx, Ticker.get_tick(), TransactionType.READ_ONLY)
 
     def retry_transaction(self):
         """
@@ -83,16 +91,19 @@ class TransactionManager:
             print('{} is already aborted or commited'.format(trx))
             return
 
-        # check if there is a write operation for same variable already waiting in front of this trx:
+        # check if there is a write operation for same variable already waiting
+        # in front of this trx:
         blocking_trx = self._wait_for_write(trx, var)
 
-        # There is no write operation ahead of trx, so we can proceed with the read:
+        # There is no write operation ahead of trx, so we can proceed with the
+        # read:
         if blocking_trx is None:
             potential_sites = self._locate_var(var)
             for s in potential_sites:
                 # read success
                 site = self.sites[s]
-                success, blocking_trx = site.read(t.id, t.type == TransactionType.READ_ONLY, t.timestamp, var)
+                success, blocking_trx = site.read(
+                    t.id, t.type == TransactionType.READ_ONLY, t.timestamp, var)
                 if success:
                     print('Read success')
                     if trx in self.waitlist:
@@ -156,7 +167,8 @@ class TransactionManager:
             site_success, site_blocking_trx = site.write(trx, var, val)
             if site_success:
                 success_sites.append(s)
-            # if its blocked by site or not blocked, site_blocking_trx will be empty list
+            # if its blocked by site or not blocked, site_blocking_trx will be
+            # empty list
             blocking_trx.update(site_blocking_trx)
             # if site is down, doesn't mean the write will fail
             if not site_success and not site_blocking_trx:

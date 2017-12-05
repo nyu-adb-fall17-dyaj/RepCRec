@@ -1,15 +1,19 @@
+"""Site of a distributed database
+
+Creates a site object with unique copies of variables and locktables.
+
+Authors:
+    Da Ying (dy877@nyu.edu)
+    Ardi Jusufi (aj2223@nyu.edu)
+"""
+
 from .ticker import Ticker
 from .variable import Variable
 
 
 class DBSite:
-    """
-    Creates a site object with unique copies of variables and locktables.
+    """Creates a site object with unique copies of variables and locktables."""
 
-    Authors:
-        Da Ying (dy877@nyu.edu)
-        Ardi Jusufi (aj2223@nyu.edu)
-    """
     def __init__(self, id):
         """
         Initializes own site copies of variables and the locktable, and sets site to active.
@@ -73,7 +77,8 @@ class DBSite:
         """
         readlocks, writelock = self.locktable[var]
         if (not readlocks or (trx in readlocks and len(readlocks) == 1)) and (not writelock or writelock == trx):
-            # if trx hold read lock, remove write lock, hold new write lock only
+            # if trx hold read lock, remove write lock, hold new write lock
+            # only
             if trx in readlocks:
                 readlocks.remove(trx)
             self.locktable[var][1] = trx
