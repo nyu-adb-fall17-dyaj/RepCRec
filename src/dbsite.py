@@ -5,6 +5,10 @@ from .variable import Variable
 class DBSite:
     """
     Creates a site object with unique copies of variables and locktables.
+
+    Authors:
+        Da Ying (dy877@nyu.edu)
+        Ardi Jusufi (aj2223@nyu.edu)
     """
     def __init__(self, id):
         """

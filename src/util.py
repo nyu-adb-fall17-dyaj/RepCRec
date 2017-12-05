@@ -7,6 +7,10 @@ class NodeColor(Enum):
 class DetectCycles():
     """
     Performs depth-first search to find all cycles on a directed graph and returns a list of cycles found.
+
+    Authors:
+        Da Ying (dy877@nyu.edu)
+        Ardi Jusufi (aj2223@nyu.edu)
     """
     def __init__(self):
         self.node_colors = {}

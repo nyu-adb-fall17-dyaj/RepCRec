@@ -4,8 +4,12 @@ from .transaction import TransactionType, Transaction, TransactionStatus, Operat
 from collections import defaultdict
 
 class TransactionManager:
-    """Manages the transactions read from input, and dispatches them to respective classes for further handling.
-       Authors: Da Ying and Ardi Jusufi"""
+    """
+    Manages the transactions read from input, and dispatches them to respective classes for further handling.
+    Authors:
+        Da Ying (dy877@nyu.edu)
+        Ardi Jusufi (aj2223@nyu.edu)
+    """
     def __init__(self, sites=None):
         """
         Maintains a list of sites and transactions used in the database, as well as a waitlist of all transactions

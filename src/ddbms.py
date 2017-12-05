@@ -9,6 +9,10 @@ import argparse
 class DDBMS:
     """
     Parses input transactions and dispatches them according to the operation.
+
+    Authors:
+        Da Ying (dy877@nyu.edu)
+        Ardi Jusufi (aj2223@nyu.edu)
     """
     def __init__(self,inputfile=None):
         """
