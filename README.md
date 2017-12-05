@@ -56,7 +56,7 @@ At the root of the project
 
 ```
 $ pip install nose
-$ nosetests
+$ nosetests -v
 ```
 
 ## Authors
