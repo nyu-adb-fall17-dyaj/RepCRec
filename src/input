@@ -1,4 +1,2 @@
-beginRO(T0)
-fail(2)
-R(T0,x1)
-end(T0)
+fail(1)
+recover(1)

@@ -1,5 +1,5 @@
-from ticker import Ticker
-from variable import Variable
+from .ticker import Ticker
+from .variable import Variable
 
 class DBSite:
     def __init__(self,id):

@@ -1,5 +1,5 @@
-from ticker import Ticker
-from transaction import TransactionType, Transaction, TransactionStatus, Operation
+from .ticker import Ticker
+from .transaction import TransactionType, Transaction, TransactionStatus, Operation
 
 from collections import defaultdict
 
