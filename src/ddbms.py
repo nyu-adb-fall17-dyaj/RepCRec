@@ -1,8 +1,8 @@
-from ticker import Ticker
-from variable import Variable
-from dbsite import DBSite
-from transaction_manager import TransactionManager
-from util import Util
+from .ticker import Ticker
+from .variable import Variable
+from .dbsite import DBSite
+from .transaction_manager import TransactionManager
+from .util import Util
 
 import argparse
 
